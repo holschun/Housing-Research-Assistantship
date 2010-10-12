@@ -1,0 +1,226 @@
+##########################################################
+################ Problem 1 ###############################
+##########################################################
+
+require(car)
+require(MASS)
+
+
+a1=50
+b1=3
+a2=1
+b2=1
+meanx=50
+sdx=50
+meanu=0
+sdu=10
+pop.size=500
+sample.size=25
+p=.6
+xpop=rnorm(pop.size, meanx, sdx)
+upop=rnorm(pop.size,meanu,sdu)
+dpop.1=c(rep(0,pop.size*(1-p)),rep(1,pop.size*p))
+dpop=sample(dpop.1,length(dpop.1))
+ypop=a1+a2*dpop+b1*xpop+b2*dpop*xpop+upop
+ypop.constrained=ypop-a2*dpop-b2*dpop*xpop
+loops=1000
+mydata=data.frame(ypop,xpop,dpop)
+R2.ur=c()
+R2.r=c()
+F.lin=c()
+P.lin=c()
+counter=0
+
+for(i in 1:loops)
+    {
+    sample.set=c(sample(1:pop.size,sample.size))
+    x.sample=xpop[sample.set]
+    y.sample=ypop[sample.set]
+    y.sample.constrained=ypop.constrained[sample.set]
+    d.sample=dpop[sample.set]
+    regression.c=lm(y.sample.constrained~x.sample)
+    regression.uc=lm(y.sample~x.sample+d.sample+d.sample*x.sample)
+    R2.ur[i]=summary(regression.uc)$r.squared
+    R2.r[i]=summary(regression.c)$r.squared
+    ftest=linear.hypothesis(regression.uc,c("d.sample=1","x.sample:d.sample=1"))
+    F.lin[i]=ftest$F[2]    
+    P.lin[i]=1-ftest$P[2]
+    if(P.lin[i]<.05)
+    {counter=counter+1}
+    }
+
+m=2
+k=4    
+F=((R2.ur-R2.r)/m)/((1-R2.ur)/(sample.size-k))
+P=pf(F, m, sample.size-k, lower.tail = TRUE)
+
+counter/loops
+
+####Tests####
+
+F/F.lin
+P/P.lin
+
+dev.off()
+png("Fstat1.png")
+hist(F.lin,ylim=c(0,1),xlab="F Statistic",ylab="Density",main="F Statistic Distribution",freq=FALSE,breaks=seq(min(F.lin),max(F.lin),length=40))
+curve(df(x,m,sample.size-k),add=T,col="Blue")
+text(9,.98,"Theoretical Distribtuion",col="Blue",font=2)
+text(9,.93,"Sample Distribution",font=2)
+
+dev.off()
+
+hist(P)
+
+##########################################################
+################ Problem 2 ###############################
+##########################################################
+
+
+clean.df=giant.df[apply(giant.df,1,function(z)all(!is.na(z))),] 
+
+
+data.2=read.csv("Table 9_1.csv",skip=3)
+str(data.2)
+temp.char1=print(as.character(data.2$Salary))
+temp.split1=print(strsplit(temp.char1,","))
+
+data.2$Salary=0
+for(i in 1:length(temp.split1))
+data.2$Salary[i]=as.numeric(paste(temp.split1[[i]],collapse=""))
+
+temp.char2=print(as.character(data.2$Spending))
+temp.split2=print(strsplit(temp.char2,","))
+
+data.2$Spending=0
+for(i in 1:length(temp.split2))
+data.2$Spending[i]=as.numeric(paste(temp.split2[[i]],collapse=""))
+
+state=data.2$X
+salary=data.2$Salary
+spending=data.2$Spending
+region2=data.2$D2
+region1=data.2$D3
+
+
+
+lm(salary~region2+region1+spending+region1*spending+region2*spending)
+
+
+region1.salary1=c()
+region1.spending1=c()
+
+
+
+for(i in 1:length(region1))
+{
+if(region2[i]==1)
+{
+region1.salary1[i]=salary[i]
+region1.spending1[i]=spending[i]
+}
+else
+{}
+}
+
+
+region1.salary=na.omit(region1.salary1)[1:length(na.omit(region1.salary1))]
+region1.spending=na.omit(region1.spending1)[1:length(na.omit(region1.spending1))]
+
+
+region2.salary1=c()
+region2.spending1=c()
+
+
+for(i in 1:length(region1))
+{
+if(region2[i]==0)
+{if(region1[i]==1)
+{
+region2.salary1[i]=salary[i]
+region2.spending1[i]=spending[i]
+}
+else
+{}
+}
+}
+
+
+region2.salary=na.omit(region2.salary1)[1:length(na.omit(region2.salary1))]
+region2.spending=na.omit(region2.spending1)[1:length(na.omit(region2.spending1))]
+
+region3.salary1=c()
+region3.spending1=c()
+
+
+
+for(i in 1:length(region1))
+{
+
+{if(if(region2[i]==0){region1[i]==0}else{1==0})
+{
+region3.salary1[i]=salary[i]
+region3.spending1[i]=spending[i]
+}
+else
+{}
+}
+}
+
+region3.salary=na.omit(region3.salary1)[1:length(na.omit(region3.salary1))]
+region3.spending=na.omit(region3.spending1)[1:length(na.omit(region3.spending1))]
+
+
+
+dev.off()
+
+png("salary.png")
+plot(region1.spending,region1.salary,col="blue",xlab="Spending ($)",ylab="Salary ($)",main="Salary vs. Spending")
+points(region2.spending,region2.salary,col="red")
+points(region3.spending,region3.salary,col="green")
+abline(lm(region1.salary~region1.spending),col="blue")
+abline(lm(region2.salary~region2.spending),col="red")
+abline(lm(region3.salary~region3.spending),col="green")
+text(12700,38000,"North East/North Central",col="blue",font=2)
+text(12700,37000,"South",col="red",font=2)
+text(12700,36000,"Other",col="green",font=2)
+
+
+dev.off()
+
+reg1.regression=print(lm(region1.salary~region1.spending))
+reg2.regression=print(lm(region2.salary~region2.spending))
+reg3.regression=print(lm(region3.salary~region3.spending))
+
+
+##########################################################
+################ Problem 3 ###############################
+##########################################################
+
+
+xdata.trained=rnorm(1000,300,200)
+ydata.trained=rnorm(1000,100,20)+.005*xdata.trained
+xdata.untrained=rnorm(1000,750,300)
+ydata.untrained=0+.025*xdata.untrained+rnorm(1000,0,25)
+allxdata=c(xdata.trained,xdata.untrained)
+allydata=c(ydata.trained,ydata.untrained)
+
+dev.off()
+
+png("combined.png")
+plot(xdata.trained,ydata.trained,col="black",ylim=c(0,max(ydata.trained)),xlim=c(0,1500),xlab="Education Level Index (Average=750)",ylab="Income Level",main="Education vs. Income")
+points(xdata.untrained,ydata.untrained,col="black")
+abline(lm(allydata~allxdata),lw=3)
+
+dev.off()
+
+png("combined2.png")
+plot(xdata.trained,ydata.trained,col="blue",ylim=c(0,max(ydata.trained)),xlim=c(0,1500),xlab="Education Level Index (Average=750)",ylab="Income Level",main="Education vs. Income")
+points(xdata.untrained,ydata.untrained,col="red")
+abline(lm(ydata.untrained~xdata.untrained),lw=3,col="red")
+abline(lm(ydata.trained~xdata.trained),col="blue",lw=3)
+
+dev.off()
+
+
+
