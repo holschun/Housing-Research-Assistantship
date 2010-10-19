@@ -2,8 +2,8 @@
 #               Initial GitHub Setup                    #
 #########################################################
 
-#These lines of code only need to be run once, and make sure to run each line separately
-#(RStudio has issues if you try and run them all at the same time
+#These lines of code only need to be run once, and they need to be copied/pasted
+#into the console (RStudio has issues if you try and run them with the run command)
 
 !git config --global user.name "Nick Holschuh"
 !git config --global user.email "holschun@carleton.edu"
