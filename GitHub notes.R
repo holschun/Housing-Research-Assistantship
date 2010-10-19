@@ -33,7 +33,7 @@ file.edit("~/.ssh/id_rsa.pub")
 !git add [name of file]
 #to add a newly created local file to the repository
 
-!git commit -a
+!git commit -a --message "_____________"
 #to validate and comment on any changes to files previous to updating the repository
 
 !git push
