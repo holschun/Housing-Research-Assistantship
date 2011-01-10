@@ -2,6 +2,8 @@
 #            Initial GitHub Setup and Use               #
 #########################################################
 
+Nick and Danny were here
+
 #These lines of code only need to be run once, and they need to be copied/pasted
 #into the console (RStudio has issues if you try and do this with the run button)
 
